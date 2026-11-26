@@ -13,38 +13,30 @@ permissions:
 jobs:
   build:
     name: Build Porco na Play
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v4
 
-      - name: Configurar Java 17
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Aceitar licenças e instalar SDK
-        env:
-          ANDROID_HOME: /usr/local/lib/android/sdk
+      - name: Verificar Android SDK
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-36" \
-            "build-tools;36.0.0" \
-            --verbose
+          echo "Android SDK: $ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms"
+          test -d "$ANDROID_HOME/platforms/android-36"
 
       - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
 
-      - name: Verificar estrutura
+      - name: Verificar arquivos
         run: |
           test -f app/build.gradle
           test -f app/src/main/AndroidManifest.xml
@@ -54,7 +46,7 @@ jobs:
       - name: Compilar AAB
         run: gradle --no-daemon bundleRelease
 
-      - name: Disponibilizar AAB
+      - name: Salvar AAB
         uses: actions/upload-artifact@v4
         with:
           name: Porco-na-Play-AAB
