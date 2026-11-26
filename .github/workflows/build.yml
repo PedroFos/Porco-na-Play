@@ -28,28 +28,33 @@ jobs:
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Instalar Android SDK 36
+      - name: Aceitar licenças e instalar SDK
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          yes | sdkmanager --licenses || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            --verbose
 
-      - name: Configurar Gradle 8.13
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
 
       - name: Verificar estrutura
         run: |
-          echo "Verificando arquivos..."
           test -f app/build.gradle
           test -f app/src/main/AndroidManifest.xml
           test -f app/src/main/java/com/pedrofos/porconaplay/MainActivity.java
           test -f app/src/main/assets/index.html
 
-      - name: Compilar Android App Bundle
-        run: |
-          gradle --no-daemon bundleRelease
+      - name: Compilar AAB
+        run: gradle --no-daemon bundleRelease
 
-      - name: Publicar arquivo AAB
+      - name: Disponibilizar AAB
         uses: actions/upload-artifact@v4
         with:
           name: Porco-na-Play-AAB
